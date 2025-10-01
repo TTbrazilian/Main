@@ -1,31 +1,55 @@
+import React from "react";
 import ProductCard from "../components/ProductCard";
 
-const MOCK = [
-  { _id: "p1", title: "Camiseta", price: 79.9 },
-  { _id: "p2", title: "Caneca", price: 39.9 },
-  { _id: "p3", title: "Mochila", price: 199.9 },
-  { _id: "p4", title: "Adesivos", price: 19.9 },
+const productsMock = [
+  {
+    id: 1,
+    title: 'Camiseta ',
+    description: 'Camiseta confortável para uso diário',
+    price: 49.99,
+    image: ''
+  },
+  {
+    id: 2,
+    title: 'Tênis ',
+    description: 'Tênis confortável para o dia a dia',
+    price: 149.99,
+    image: ''
+  },
+  {
+    id: 3,
+    title: 'Mochila NexusCart',
+    description: 'Mochila resistente e estilosa',
+    price: 89.99,
+    image: ''
+  },
+  {
+    id: 4,
+    title: 'Boné ',
+    description: 'Boné casual para uso diário',
+    price: 39.99,
+    image: ''
+  }
 ];
 
-export default function ProductList() {
+const ProductList = () => {
   return (
-    <section style={styles.wrap}>
-      <h2 style={styles.title}>Produtos</h2>
-      <div style={styles.grid}>
-        {MOCK.map((p) => (
-          <ProductCard key={p._id} product={p} />
-        ))}
-      </div>
-    </section>
+    <div style={styles.container}>
+      {productsMock.map((product) => (
+        <ProductCard key={product._id} product={product} />
+      ))}
+    </div>
   );
-}
-
+};
 const styles = {
-  wrap: { maxWidth: 1100, margin: "0 auto", padding: "1rem" },
-  title: { margin: "0 0 1rem 0" },
-  grid: {
+  container: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-    gap: "1rem",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "20px",
+    padding: "30px",
+    justifyItems: "center",
+    backgroundColor: "#f8f9fa",
   },
 };
+
+export default ProductList;

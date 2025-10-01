@@ -1,11 +1,9 @@
-// Dia 1: placeholder de detalhes; Dia 3 buscará GET /api/products/:id
 import { useParams } from "react-router-dom";
 
 export default function ProductDetail() {
   const { id } = useParams();
 
   const handleAddToCart = () => {
-    // Dia 1: sem integração. Apenas placeholder.
     console.log("Add to cart (UI only):", id);
     alert("Dia 1: botão de adicionar ao carrinho (sem API ainda).");
   };
@@ -17,7 +15,7 @@ export default function ProductDetail() {
         <div style={styles.info}>
           <h2>Produto #{id}</h2>
           <p style={{ color: "#555" }}>
-            Descrição do produto. (Substituir com dados reais no Dia 3.)
+            Descrição do produto.
           </p>
           <button onClick={handleAddToCart} style={styles.button}>
             Adicionar ao carrinho

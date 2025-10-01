@@ -3,7 +3,7 @@ import { useState } from "react";
 export default function AuthForm({
   title = "Entrar",
   submitLabel = "Continuar",
-  mode = "login", // "login" | "register"
+  mode = "login",
   onSubmit = () => {},
 }) {
   const [form, setForm] = useState({
@@ -17,7 +17,6 @@ export default function AuthForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Dia 1: apenas UI — sem integração. Deixa o evento pronto.
     onSubmit(form);
   };
 
