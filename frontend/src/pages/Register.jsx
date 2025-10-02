@@ -1,4 +1,3 @@
-// frontend/src/pages/Register.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
@@ -26,85 +25,53 @@ export default function Register() {
     }
     try {
       setLoading(true);
-
-      // 1) Registrar
       await api.post('/api/users/register', { name, email, password });
-
-      // 2) Login automático (seu backend retorna { token })
       const { data } = await api.post('/api/users/login', { email, password });
-
-      // 3) Persistir token (user = null porque seu login atual não retorna dados do usuário)
       setAuth({ token: data.token, user: null });
-
-      setOk('Cadastro realizado! Redirecionando...');
-      // 4) Ir para Home (ou onde preferir)
+      setOk('Cadastro realizado! Redirecionando…');
       navigate('/');
     } catch (e) {
-      const msg = e.response?.data?.message || 'Erro ao cadastrar';
-      setErr(msg);
+      setErr(e.response?.data?.message || 'Erro ao cadastrar');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main style={{ maxWidth: 420, margin: '48px auto', padding: 16 }}>
-      <h2 style={{ marginBottom: 16 }}>Criar conta</h2>
+    <form onSubmit={handleSubmit} className="card" style={{ padding: 16, maxWidth: 420, margin:'24px auto' }}>
+      <h2>Criar conta</h2>
 
-      {err && <p style={{ color: 'red', marginBottom: 12 }}>{err}</p>}
-      {ok && <p style={{ color: 'green', marginBottom: 12 }}>{ok}</p>}
+      {err && <p style={{ color:'var(--danger)' }}>{err}</p>}
+      {ok && <p style={{ color:'var(--primary)' }}>{ok}</p>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
-        <label>
-          Nome<br />
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Seu nome"
-            autoComplete="name"
-          />
-        </label>
+      <label style={{ marginTop: 8 }}>Nome</label>
+      <input className="input" value={name} onChange={(e)=>setName(e.target.value)} placeholder="Seu nome" />
 
-        <label>
-          Email<br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="voce@exemplo.com"
-            autoComplete="email"
-          />
-        </label>
+      <label style={{ marginTop: 8 }}>Email</label>
+      <input className="input" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="voce@exemplo.com" />
 
-        <label>
-          Senha<br />
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              type={showPwd ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="new-password"
-              style={{ flex: 1 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPwd((s) => !s)}
-              style={{ minWidth: 90 }}
-            >
-              {showPwd ? 'Ocultar' : 'Mostrar'}
-            </button>
-          </div>
-        </label>
-
-        <button type="submit" disabled={loading}>
-          {loading ? 'Enviando...' : 'Cadastrar'}
+      <label style={{ marginTop: 8 }}>Senha</label>
+      <div style={{ display:'flex', gap:8 }}>
+        <input
+          className="input"
+          type={showPwd ? 'text' : 'password'}
+          value={password}
+          onChange={(e)=>setPassword(e.target.value)}
+          placeholder="••••••••"
+          style={{ flex:1 }}
+        />
+        <button type="button" className="btn btn-outline" onClick={()=>setShowPwd(s=>!s)} style={{ minWidth:90 }}>
+          {showPwd ? 'Ocultar' : 'Mostrar'}
         </button>
-      </form>
+      </div>
 
-      <p style={{ marginTop: 16 }}>
+      <button className="btn btn-primary" type="submit" disabled={loading} style={{ marginTop: 12 }}>
+        {loading ? 'Enviando…' : 'Cadastrar'}
+      </button>
+
+      <p className="muted" style={{ marginTop: 12 }}>
         Já tem conta? <Link to="/login">Entrar</Link>
       </p>
-    </main>
+    </form>
   );
 }

@@ -1,16 +1,9 @@
 export default function Footer() {
   return (
-    <footer style={styles.footer}>
-      <p style={{ margin: 0 }}>© {new Date().getFullYear()} NexusCart</p>
+    <footer className="site-footer">
+      <div className="container" style={{ padding: 16, color: 'var(--muted)' }}>
+        © {new Date().getFullYear()} NexusCart — Todos os direitos reservados
+      </div>
     </footer>
   );
 }
-
-const styles = {
-  footer: {
-    borderTop: "1px solid #eee",
-    padding: "1rem",
-    textAlign: "center",
-    background: "#fff",
-  },
-};
