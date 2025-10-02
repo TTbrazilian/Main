@@ -1,14 +1,9 @@
 import express from 'express';
 import Product from '../models/Product.js';
-app.use('/api/products', productRoutes);
 
 
 const router = express.Router();
 
-/**
- * POST /api/products
- * body: { name, description, price, stock, categories:[], images:[] }
- */
 router.post('/', async (req, res) => {
   try {
     const created = await Product.create(req.body);
@@ -18,10 +13,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-/**
- * GET /api/products
- * query: page, limit, q, category, minPrice, maxPrice
- */
+
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 12, q, category, minPrice, maxPrice } = req.query;
@@ -50,10 +42,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-/**
- * PUT /api/products/:id
- * Atualiza campos permitidos; valida números >= 0
- */
 router.put('/:id', async (req, res) => {
   try {
     const allowed = ['name','description','price','stock','categories','images','isActive'];
@@ -79,10 +67,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-/**
- * DELETE /api/products/:id
- * Soft delete → isActive=false
- */
 router.delete('/:id', async (req, res) => {
   try {
     const updated = await Product.findByIdAndUpdate(
@@ -97,10 +81,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-/**
- * PATCH /api/products/:id/restore
- * Reativa produto → isActive=true
- */
 router.patch('/:id/restore', async (req, res) => {
   try {
     const updated = await Product.findByIdAndUpdate(
@@ -115,10 +95,6 @@ router.patch('/:id/restore', async (req, res) => {
   }
 });
 
-/**
- * PATCH /api/products/:id/stock
- * Ajusta estoque por delta: { delta: +N | -N }
- */
 router.patch('/:id/stock', async (req, res) => {
   try {
     const { delta } = req.body;

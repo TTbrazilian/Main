@@ -1,3 +1,4 @@
+// frontend/src/context/AuthProvider.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../services/api';
 
@@ -14,7 +15,6 @@ export function AuthProvider({ children }) {
   });
 
   useEffect(() => {
-    // garante header Authorization no refresh
     const token = localStorage.getItem('token');
     if (token) {
       api.defaults.headers.common.Authorization = `Bearer ${token}`;
@@ -31,8 +31,12 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('token');
       delete api.defaults.headers.common.Authorization;
     }
-    if (user) localStorage.setItem('user', JSON.stringify(user));
-    setUser(user || null);
+    if (user !== undefined) {
+      localStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+    } else {
+      setUser(null);
+    }
   }
 
   function logout() {
@@ -42,8 +46,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  const value = { user, setAuth, logout };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, setAuth, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
