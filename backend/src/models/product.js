@@ -16,4 +16,9 @@ const productSchema = new Schema(
 // permite busca por texto
 productSchema.index({ name: 'text', description: 'text' });
 
+// índices adicionais (ajudam filtros e ordenação)
+productSchema.index({ price: 1 });
+productSchema.index({ categories: 1 });
+
+
 export default model('Product', productSchema);
