@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+
 
 dotenv.config(); // Carrega variáveis de ambiente
 
