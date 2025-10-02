@@ -3,40 +3,29 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
+    name: { type: String, required: true },
+    email:{ type: String, required: true, unique: true },
+    password:{ type: String, required: true },
+
+    // ⬇️ NOVO: carrinho do usuário
+    cart: [{
+      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+      qty: { type: Number, required: true, min: 1, default: 1 }
+    }]
   },
-  {
-    timestamps: true, // Adiciona createdAt e updatedAt automaticamente
-  }
+  { timestamps: true }
 );
 
-// Criptografar a senha antes de salvar no banco de dados
+// hash de senha (mantém)
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-
+  if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Verificar a senha ao fazer login
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
 const User = mongoose.model('User', userSchema);
-
 export default User;
