@@ -20,3 +20,5 @@ productSchema.index({ categories: 1 });
 
 
 export default model('Product', productSchema);
+
+
