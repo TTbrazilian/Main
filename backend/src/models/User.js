@@ -7,6 +7,8 @@ const userSchema = mongoose.Schema(
     email:{ type: String, required: true, unique: true },
     password:{ type: String, required: true },
 
+    isAdmin: { type: Boolean, default: false },
+    
     // ⬇️ NOVO: carrinho do usuário
     cart: [{
       product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
@@ -28,4 +30,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 const User = mongoose.model('User', userSchema);
+
+
 export default User;
