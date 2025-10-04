@@ -9,6 +9,19 @@ body {
   font: 400 16px/1.5 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
 }
 
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .2s ease, color .2s ease;
+}
+.site-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+.site-footer { background: var(--surface); border-top: 1px solid var(--border); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+.input, .btn { transition: filter .15s ease, background .15s ease, color .15s ease, border-color .15s ease; }
+
+
 
 .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
 .card {

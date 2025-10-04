@@ -1,16 +1,16 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa'; 
+import CartBadge from './CartBadge';
+import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const showBack = location.pathname !== '/';
 
   return (
     <header className="site-header">
       <div className="container nav" style={{ gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           {showBack && (
             <button
               type="button"
@@ -18,12 +18,14 @@ export default function Header() {
               aria-label="Voltar"
               onClick={() => navigate(-1)}
               title="Voltar"
-              style={{ padding: 8 }}
+              style={{ padding: '8px 10px', fontWeight: 700 }}
             >
-              <FaArrowLeft />
+              ←
             </button>
           )}
-          <Link to="/" style={{ fontWeight: 800, fontSize: 18 }}>NexusCart</Link>
+          <Link to="/" style={{ fontWeight: 800, fontSize: 18, textDecoration: 'none' }}>
+            NexusCart
+          </Link>
         </div>
 
         <nav style={{ display:'flex', gap:12, alignItems:'center' }}>
@@ -31,7 +33,8 @@ export default function Header() {
           <NavLink to="/products">Produtos</NavLink>
           <NavLink to="/login">Entrar</NavLink>
           <NavLink to="/register" className="btn btn-primary btn-cta">Criar conta</NavLink>
-          {/* ↑ usamos uma classe extra `btn-cta` para forçar cor do texto no hover */}
+          <CartBadge />
+          <ThemeToggle />
         </nav>
       </div>
     </header>
