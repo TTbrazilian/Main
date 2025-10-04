@@ -69,7 +69,7 @@ async function seedProductsIfEmpty() {
 
   await Product.insertMany(items);
   console.log(`${items.length} produtos inseridos.`);
-}
+}got
 
 async function main() {
   try {
