@@ -4,4 +4,4 @@ sendo assim atualizei o e-mail do computador e vou realizar o commit com as mesm
 
 
 
-    Aconteceu de novo o problema com o e-mail 
+    Aconteceu de novo o problema com o e-mail , fiz a chore de seeds 
