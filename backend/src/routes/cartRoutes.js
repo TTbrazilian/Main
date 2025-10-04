@@ -2,18 +2,12 @@ import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
+import { calcShipping, calcDiscount, finalizeTotals } from '../utils/checkout.js';
 
 const router = express.Router();
 
-router.delete('/', protect, async (req, res) => {
-  const user = await User.findById(req.user);
-  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
-  user.cart = [];
-  await user.save();
-  res.json({ message: 'Carrinho limpo' });
-});
-
-router.get('/summary', protect, async (req, res) => {
+router.get('/checkout-preview', protect, async (req, res) => {
+  const { cep = '', coupon = '' } = req.query;
   const user = await User.findById(req.user).populate('cart.product', 'name price images');
   if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
 
@@ -26,7 +20,14 @@ router.get('/summary', protect, async (req, res) => {
   }));
 
   const subtotal = items.reduce((acc, it) => acc + (it.price * it.qty), 0);
-  res.json({ count: items.length, items, subtotal });
+  let shipping = calcShipping(subtotal, String(cep));
+  let discount = calcDiscount(subtotal, String(coupon));
+
+  if ((coupon || '').trim().toUpperCase() === 'FRETEGRATIS') shipping = 0;
+
+  const total = finalizeTotals(subtotal, shipping, discount);
+
+  res.json({ items, subtotal, shipping, discount, total });
 });
 
 export default router;
