@@ -4,8 +4,6 @@ import { api } from '../services/api';
 
 export default function Checkout() {
   const navigate = useNavigate();
-
-  // endereço (simples e direto)
   const [addr, setAddr] = useState({
     nome: '',
     cep: '',
@@ -53,13 +51,13 @@ export default function Checkout() {
     }
     try {
       setSaving(true);
-      // estrutura de pedido simples (o backend pode ignorar o address, mas guardamos para futura extensão)
+      
       const payload = {
         address: addr,
         note: '',
       };
       const { data } = await api.post('/api/orders', payload);
-      // sucesso → ir para pedidos
+  
       navigate('/account/orders', { state: { placed: data?._id || true } });
     } catch (e) {
       alert(e.response?.data?.message || 'Erro ao finalizar pedido');
@@ -73,7 +71,7 @@ export default function Checkout() {
 
   return (
     <div className="grid" style={{ alignItems: 'start' }}>
-      {/* endereço */}
+
       <form onSubmit={placeOrder} className="card" style={{ padding: 16 }}>
         <h2>Endereço de entrega</h2>
         <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
@@ -122,7 +120,7 @@ export default function Checkout() {
         </div>
       </form>
 
-      {/* resumo */}
+
       <aside className="card" style={{ padding: 16 }}>
         <h2>Resumo do pedido</h2>
         {!items.length ? (
