@@ -1,63 +1,128 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import { protect } from '../middleware/authMiddleware.js';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
+import { calcShipping, calcDiscount, finalizeTotals } from '../utils/checkout.js';
 
 const router = express.Router();
 
-// POST /api/orders  → cria pedido a partir do carrinho do usuário
 router.post('/', protect, async (req, res) => {
-  // Carrinho do usuário com produtos populados
-  const me = await User.findById(req.user).populate('cart.product');
-  if (!me || !me.cart || me.cart.length === 0) {
-    return res.status(400).json({ message: 'Carrinho vazio' });
-  }
+  const { shippingAddress, cep, coupon } = req.body;
 
-  // Monta itens + calcula total
-  const items = me.cart.map(i => ({
+  const user = await User.findById(req.user).populate('cart.product');
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  if (!user.cart?.length) return res.status(400).json({ message: 'Carrinho vazio' });
+
+  const items = user.cart.map(i => ({
     product: i.product._id,
+    name: i.product.name,
+    price: i.product.price ?? 0,
     qty: i.qty,
-    price: i.product.price
+    image: i.product.images?.[0] || null
   }));
-  const total = items.reduce((acc, i) => acc + i.qty * i.price, 0);
 
-  // (Opcional) checar estoque disponível
-  for (const i of me.cart) {
-    if (i.product.stock < i.qty) {
-      return res.status(400).json({ message: `Estoque insuficiente para ${i.product.name}` });
-    }
-  }
+  const subtotal = items.reduce((acc, it) => acc + it.price * it.qty, 0);
+  let shipping = calcShipping(subtotal, String(cep || shippingAddress?.zip || ''));
+  let discount = calcDiscount(subtotal, String(coupon));
+  if ((coupon || '').trim().toUpperCase() === 'FRETEGRATIS') shipping = 0;
 
-  // (Opcional) abater estoque
-  for (const i of me.cart) {
-    await Product.updateOne({ _id: i.product._id }, { $inc: { stock: -i.qty } });
-  }
+  const total = finalizeTotals(subtotal, shipping, discount);
 
-  // Cria pedido, limpa carrinho
-  const order = await Order.create({ user: me._id, items, total, status: 'PLACED' });
-  me.cart = [];
-  await me.save();
+  const order = await Order.create({
+    user: user._id,
+    items,
+    subtotal,
+    shipping,
+    discount,
+    total,
+    shippingAddress,
+    status: 'PLACED'
+  });
 
-  return res.status(201).json(order);
+  user.cart = [];
+  await user.save();
+
+  res.status(201).json(order);
 });
 
-// GET /api/orders → lista pedidos do usuário logado (paginado)
 router.get('/', protect, async (req, res) => {
-  const page  = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.min(parseInt(req.query.limit) || 10, 50);
-  const skip  = (page - 1) * limit;
+  const { page = 1, limit = 10 } = req.query;
+  const p = Math.max(parseInt(page), 1);
+  const l = Math.min(parseInt(limit), 50);
+  const skip = (p - 1) * l;
 
   const [items, total] = await Promise.all([
-    Order.find({ user: req.user })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('items.product'),
+    Order.find({ user: req.user }).sort({ createdAt: -1 }).skip(skip).limit(l),
     Order.countDocuments({ user: req.user })
   ]);
 
-  return res.json({ items, page, total, pages: Math.ceil(total / limit) });
+  res.json({ items, page: p, total, pages: Math.ceil(total / l) });
+});
+
+router.get('/:id', protect, async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user });
+  if (!order) return res.status(404).json({ message: 'Pedido não encontrado' });
+  res.json(order);
+});
+
+router.patch('/:id/pay', protect, async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user });
+  if (!order) return res.status(404).json({ message: 'Pedido não encontrado' });
+  if (order.status !== 'PLACED') return res.status(400).json({ message: 'Pedido não está pendente de pagamento' });
+
+  for (const it of order.items) {
+    const prod = await Product.findById(it.product);
+    if (!prod) return res.status(404).json({ message: `Produto ${it.product} não encontrado` });
+    if ((prod.stock ?? 0) < it.qty) {
+      return res.status(400).json({ message: `Estoque insuficiente para ${prod.name}` });
+    }
+    prod.stock -= it.qty;
+    await prod.save();
+  }
+
+  order.status = 'PAID';
+  order.paidAt = new Date();
+  await order.save();
+
+  res.json(order);
+});
+
+router.patch('/:id/cancel', protect, async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user });
+  if (!order) return res.status(404).json({ message: 'Pedido não encontrado' });
+  if (order.status === 'CANCELED') return res.status(400).json({ message: 'Pedido já está cancelado' });
+
+  if (order.status === 'PAID') {
+    for (const it of order.items) {
+      const prod = await Product.findById(it.product);
+      if (prod) {
+        prod.stock = (prod.stock ?? 0) + it.qty;
+        await prod.save();
+      }
+    }
+  }
+
+  order.status = 'CANCELED';
+  await order.save();
+  res.json(order);
+});
+
+router.get('/summary', protect, async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.user);
+  const agg = await Order.aggregate([
+    { $match: { user: userId } },
+    { $group: { _id: '$status', count: { $sum: 1 } } }
+  ]);
+
+  const map = Object.fromEntries(agg.map(x => [x._id, x.count]));
+  res.json({
+    placed: map.PLACED || 0,
+    paid: map.PAID || 0,
+    canceled: map.CANCELED || 0,
+    total: (map.PLACED || 0) + (map.PAID || 0) + (map.CANCELED || 0)
+  });
 });
 
 export default router;

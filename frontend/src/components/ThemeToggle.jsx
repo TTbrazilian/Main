@@ -1,11 +1,30 @@
-export default function ThemeToggle(){
-  function toggle(){
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-  }
-  if (typeof window !== 'undefined') {
-    const pref = localStorage.getItem('theme');
-    if (pref === 'dark') document.documentElement.classList.add('dark');
-  }
-  return <button className="btn btn-ghost" onClick={toggle}>Tema</button>;
+import { useEffect, useState } from 'react';
+
+export default function ThemeToggle() {
+  const [dark, setDark] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  );
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dark) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [dark]);
+
+  return (
+    <button
+      type="button"
+      className="btn btn-ghost"
+      onClick={() => setDark(v => !v)}
+      title={dark ? 'Tema claro' : 'Tema escuro'}
+      style={{ padding: '6px 10px', fontWeight: 700 }}
+    >
+      {dark ? '☀️' : '🌙'}
+    </button>
+  );
 }

@@ -14,7 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 
-// ...dentro de <Routes>:
+
 <Route element={<ProtectedRoute />}>
   <Route path="/checkout" element={<Checkout />} />
   <Route path="/account/orders" element={<Orders />} />
