@@ -2,26 +2,28 @@ import path from 'path';
 import fs from 'fs';
 import express from 'express';
 import multer from 'multer';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+const UPLOAD_DIR = process.env.UPLOAD_DIR || 'uploads';
+
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => {
+  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+  filename: (_req, file, cb) => {
     const safe = file.originalname.replace(/\s+/g, '-').toLowerCase();
-    const name = `${Date.now()}-${safe}`;
-    cb(null, name);
+    cb(null, `${Date.now()}-${safe}`);
   }
 });
+
 const upload = multer({ storage });
 
-// POST /api/upload  (form-data: file)
 router.post('/', upload.single('file'), (req, res) => {
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.status(201).json({ url: fileUrl });
+  if (!req.file) return res.status(400).json({ message: 'Arquivo não enviado' });
+  const url = `/uploads/${req.file.filename}`;
+  res.status(201).json({ url });
 });
 
 export default router;
