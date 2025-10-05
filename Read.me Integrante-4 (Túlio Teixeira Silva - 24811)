@@ -1,4 +1,4 @@
-# README — Integrante 4 (Segurança, Qualidade e Integração Contínua)
+#README — Integrante 4 (Segurança, Qualidade e Integração Contínua)
 
 > **Papel no projeto:** O Integrante 4 é responsável por **segurança do back-end**, **qualidade do código** e **esteira de integração contínua (CI)**. O foco é garantir que as rotas criadas pelo time estejam protegidas (auth/RBAC), bem testadas (unitário/E2E) e publicadas com confiabilidade no ambiente de entrega.
 
