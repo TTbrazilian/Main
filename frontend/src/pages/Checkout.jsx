@@ -15,6 +15,7 @@ export default function Checkout() {
     estado: '',
   });
 
+  const [cepError, setCepError] = useState('');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -39,8 +40,13 @@ export default function Checkout() {
     return (items || []).reduce((acc, i) => acc + (i.product?.price ?? 0) * i.qty, 0);
   }, [items]);
 
+  function validateCep(cep) {
+    return /^\d{8}$/.test(cep);
+  }
+
   async function placeOrder(e) {
     e.preventDefault();
+    setCepError('');
     if (!items.length) {
       alert('Seu carrinho está vazio.');
       return;
@@ -49,15 +55,19 @@ export default function Checkout() {
       alert('Preencha os campos obrigatórios do endereço.');
       return;
     }
+    if (!validateCep(addr.cep)) {
+      setCepError('CEP inválido. Digite 8 números.');
+      return;
+    }
     try {
       setSaving(true);
-      
+
       const payload = {
         address: addr,
         note: '',
       };
       const { data } = await api.post('/api/orders', payload);
-  
+
       navigate('/account/orders', { state: { placed: data?._id || true } });
     } catch (e) {
       alert(e.response?.data?.message || 'Erro ao finalizar pedido');
@@ -71,7 +81,6 @@ export default function Checkout() {
 
   return (
     <div className="grid" style={{ alignItems: 'start' }}>
-
       <form onSubmit={placeOrder} className="card" style={{ padding: 16 }}>
         <h2>Endereço de entrega</h2>
         <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
@@ -82,7 +91,17 @@ export default function Checkout() {
           <div style={{ display:'grid', gridTemplateColumns:'160px 1fr', gap:10 }}>
             <div>
               <label>CEP*</label>
-              <input className="input" value={addr.cep} onChange={e=>setAddr({...addr, cep:e.target.value})} />
+              <input
+                className="input"
+                value={addr.cep}
+                onChange={e => {
+                  setAddr({ ...addr, cep: e.target.value.replace(/\D/g, '') });
+                  setCepError('');
+                }}
+                maxLength={8}
+                placeholder="Somente números"
+              />
+              {cepError && <span style={{ color: 'red', fontSize: 13 }}>{cepError}</span>}
             </div>
             <div>
               <label>Bairro</label>
@@ -119,8 +138,6 @@ export default function Checkout() {
           </button>
         </div>
       </form>
-
-
       <aside className="card" style={{ padding: 16 }}>
         <h2>Resumo do pedido</h2>
         {!items.length ? (

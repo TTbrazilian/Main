@@ -45,6 +45,10 @@ export default function Cart() {
 
   useEffect(() => { load(); }, []);
 
+  const handleClearCart = () => {
+    setItems([]);
+  };
+
   if (loading) return <main style={{ padding: 24 }}><p>Carregando...</p></main>;
   if (err) return <main style={{ padding: 24 }}><p style={{color:'red'}}>{err}</p></main>;
 
@@ -90,6 +94,10 @@ export default function Cart() {
           </a>
         </section>
       )}
+
+      <button onClick={handleClearCart} style={{ marginBottom: '1rem' }}>
+        Limpar carrinho
+      </button>
     </main>
   );
 }
