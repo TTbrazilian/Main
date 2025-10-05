@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 export default function ProductCard({ p }) {
-  const img = p.images?.[0] || 'https://via.placeholder.com/600x400?text=Produto';
+  const img = p.images?.[0] || 'https://via.placeholder.com/120x80';
   return (
     <article className="card" style={{ overflow:'hidden', display:'flex', flexDirection:'column' }}>
       <img src={img} alt={p.name} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover' }} />
