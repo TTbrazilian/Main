@@ -1,64 +1,53 @@
 import express from 'express';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Rota de registro
-router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
-
-  try {
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-      return res.status(400).json({ message: 'Usuário já existe' });
-    }
-
-    const user = new User({
-      name,
-      email,
-      password,
-    });
-
-    await user.save();
-
-    res.status(201).json({
-      message: 'Usuário criado com sucesso',
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro no servidor', error: error.message });
-  }
+router.get('/me', protect, async (req, res) => {
+  const user = await User.findById(req.user).select('-password');
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+  res.json(user);
 });
 
-// Rota de login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+router.get('/me/addresses', protect, async (req, res) => {
+  const user = await User.findById(req.user).select('addresses');
+  res.json(user?.addresses || []);
+});
 
-  try {
-    const user = await User.findOne({ email });
+router.post('/me/addresses', protect, async (req, res) => {
+  const user = await User.findById(req.user);
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
 
-    if (!user) {
-      return res.status(400).json({ message: 'Credenciais inválidas' });
-    }
+  const addr = req.body; 
+  user.addresses.push(addr);
+  await user.save();
+  res.status(201).json(user.addresses[user.addresses.length - 1]);
+});
 
-    const isPasswordMatch = await user.matchPassword(password);
+router.put('/me/addresses/:addrId', protect, async (req, res) => {
+  const user = await User.findById(req.user);
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
 
-    if (!isPasswordMatch) {
-      return res.status(400).json({ message: 'Credenciais inválidas' });
-    }
+  const a = user.addresses.id(req.params.addrId);
+  if (!a) return res.status(404).json({ message: 'Endereço não encontrado' });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '30d',
-    });
+  Object.assign(a, req.body);
+  await user.save();
+  res.json(a);
+});
 
-    res.json({
-      message: 'Login realizado com sucesso',
-      token,
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro no servidor', error: error.message });
-  }
+router.delete('/me/addresses/:addrId', protect, async (req, res) => {
+  const user = await User.findById(req.user);
+  if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+  const a = user.addresses.id(req.params.addrId);
+  if (!a) return res.status(404).json({ message: 'Endereço não encontrado' });
+
+  a.deleteOne();
+  await user.save();
+  res.status(204).end();
 });
 
 export default router;

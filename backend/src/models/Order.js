@@ -15,7 +15,7 @@ const addressSchema = new Schema({
   district: String,
   city: String,
   state: String,
-  zip: String, 
+  zip: String,
 }, { _id: false });
 
 const orderSchema = new Schema({
@@ -28,9 +28,12 @@ const orderSchema = new Schema({
   total:    { type: Number, required: true, min: 0 },
 
   shippingAddress: addressSchema,
-
   status: { type: String, enum: ['PLACED','PAID','CANCELED'], default: 'PLACED', index: true },
   paidAt: Date,
+
+  idempotencyKey: { type: String }
 }, { timestamps: true });
+
+orderSchema.index({ user: 1, idempotencyKey: 1 }, { unique: true, sparse: true });
 
 export default model('Order', orderSchema);
