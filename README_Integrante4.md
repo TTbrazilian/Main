@@ -1,4 +1,4 @@
-# 🔐 README — Integrante 4
+# 🔐 README — Integrante 4 Túlio Teixeira Silva
 **Segurança, Qualidade e Integração Contínua (CI/CD)**
 
 > **Papel no projeto:** O Integrante 4 garante **segurança do back-end**, **qualidade do código** e **esteira de integração/entrega contínua**. A missão é proteger as rotas (Auth/RBAC), validar entradas, padronizar respostas, testar bem e publicar com confiabilidade.
